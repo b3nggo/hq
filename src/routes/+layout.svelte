@@ -1,6 +1,9 @@
 <script>
-  let { children } = $props()
   import '../app.css'
+  import 'material-icons/iconfont/filled.css'
+  import 'material-icons/iconfont/outlined.css'
+
+  let { children } = $props()
 </script>
 
 {@render children()}
