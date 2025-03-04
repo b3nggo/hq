@@ -26,7 +26,9 @@
     -webkit-backdrop-filter: blur(5px);
     border: 1px solid rgba(255, 255, 255, 0.3);
     overflow: hidden;
-    transition: height .2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition-duration: .2s;
+    transition-timing-function: cubic-bezier(0.25, 0.8, 0.25, 1);
+    transform-origin: height, width;
 }
 
 .dynamic-island.expanded {
@@ -84,6 +86,13 @@
 .menu-page {
     overflow: auto;
     position: relative;
+    opacity: 1;
+    transition: opacity 0.1s linear;
+    transition-delay: .2s;
+}
+
+.menu-page.hide {
+    opacity: 0;
 }
 
 .menu-header {
@@ -93,4 +102,14 @@
     display: flex;
     align-items: center;
     padding-left: 20px;
+}
+
+@media screen and (min-width: 1024px) {
+    .dynamic-island {
+        width: 768px;
+    }
+
+    .dynamic-island.expanded {
+        width: calc(100vw - 20px);
+    }
 }

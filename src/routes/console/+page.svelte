@@ -1,11 +1,67 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { browser } from '$app/environment'
+  import Chart from 'chart.js/auto'
 
   // const urlTemplate = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
   const urlTemplate = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
 
-  let menuView: HTMLDivElement,
+  const data = [
+    { year: 2010, revenue: 1000000 },
+    { year: 2011, revenue: 2000000 },
+    { year: 2012, revenue: 1500000 },
+    { year: 2013, revenue: 2500000 },
+    { year: 2014, revenue: 2200000 },
+    { year: 2015, revenue: 3000000 },
+    { year: 2016, revenue: 2800000 }
+  ]
+
+  const forReview = [
+    {
+      id: 0,
+      imageUrl: 'https://img.daisyui.com/images/profile/demo/2@94.webp',
+      name: 'Hart Hagerty',
+      submissionDate: '1-03-2025',
+      verified: false
+    },
+    {
+      id: 1,
+      imageUrl: 'https://img.daisyui.com/images/profile/demo/3@94.webp',
+      name: 'Brice Swyre',
+      submissionDate: '28-02-2025',
+      verified: false
+    },
+    {
+      id: 2,
+      imageUrl: 'https://img.daisyui.com/images/profile/demo/4@94.webp',
+      name: 'Marjy Ferencz',
+      submissionDate: '27-02-2025',
+      verified: false
+    },
+    {
+      id: 3,
+      imageUrl: 'https://img.daisyui.com/images/profile/demo/5@94.webp',
+      name: 'Yancy Tear',
+      submissionDate: '26-02-2025',
+      verified: false
+    }
+  ]
+
+  const fraudAlert = [
+    {
+      id: 0,
+      rideId: 0,
+      status: 'ongoing',
+      location: 'Jl. Cihampelas No. 123, Bandung',
+      date: '1-03-2025',
+      driver: 'Hart Hagerty',
+      imageUrl: 'https://img.daisyui.com/images/profile/demo/2@94.webp',
+      passenger: 'Brice Swyre'
+    }
+  ]
+
+  let revenueEl: HTMLCanvasElement,
+    menuView: HTMLDivElement,
     mapElement: HTMLDivElement | null = null,
     map: any = null,
     view: [number, number] = [-6.940583170466513, 107.68126364180127]
@@ -31,7 +87,7 @@
     return m
   }
 
-  const onMenu = (name = 'stats') => {
+  const onMenu = async (name = 'stats') => {
     activeMenu = name
     switch (name) {
       case 'approval':
@@ -45,6 +101,12 @@
         break
     }
     expanded = true
+
+    await new Promise(() => {
+      setTimeout(() => {
+        onMenuView()
+      }, 210)
+    })
   }
 
   const onResize = () => {
@@ -58,9 +120,35 @@
     menuViewWidth = rect.width
   }
 
+  const onRevenueElement = () => {
+    new Chart(revenueEl, {
+      type: 'line',
+      data: {
+        labels: data.map((d) => d.year),
+        datasets: [
+          {
+            label: 'Revenue',
+            data: data.map((d) => d.revenue),
+            fill: false,
+            borderColor: 'rgb(65, 42, 213)',
+            tension: 0.1
+          }
+        ]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    })
+  }
+
   onMount(async () => {
     if (browser && mapElement) map = await createMap(mapElement)
     if (menuView) onMenuView()
+    if (revenueEl) onRevenueElement()
   })
 </script>
 
@@ -93,38 +181,144 @@
   </div>
   {#if !expanded}
     <div class={`scroll-view`}>
-      {#each { length: 10 } as _, i}
-        <div class={`sized-box mb-4`}>
-          <span>Quick look {i}</span>
-        </div>
-      {/each}
+      <div class={`sized-box mb-4`}>
+        <p>8<br /><small>Active drivers</small></p>
+      </div>
+      <div class={`sized-box mb-4`}>
+        <p>21<br /><small>Ongoing rides</small></p>
+      </div>
+      <div class={`sized-box mb-4`}>
+        <p>198<br /><small>Completed rides</small></p>
+      </div>
+      <div class={`sized-box mb-4`}>
+        <p>11<br /><small>Cancellations</small></p>
+      </div>
     </div>
   {/if}
   <div class={`menu-view`} bind:this={menuView}>
     <div class={`menu-pages`} style={`min-height: ${menuViewHeight}px; min-width: ${menuViewWidth * 3}px; left: -${menuViewWidth * menuIndex}px;`}>
-      <section class={`menu-page`} style={`min-width: ${menuViewWidth}px; min-height: ${menuViewHeight}px;`}>
+      <section class={`menu-page`} class:hide={!expanded} style={`min-width: ${menuViewWidth}px; min-height: ${menuViewHeight}px;`}>
         <header class={`menu-header sticky top-0`}>
           <h1 class={`font-bold`}>Stats</h1>
         </header>
-        {#each { length: 10 } as _, i}
-          <p class={`p-4`}>{i} Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsam officia magnam quia et eius, laudantium maxime alias eveniet facilis. Totam cupiditate iste quo itaque ea nulla vero repellat aspernatur dignissimos?</p>
-        {/each}
+        <canvas bind:this={revenueEl}></canvas>
       </section>
-      <section class={`menu-page`} style={`min-width: ${menuViewWidth}px; min-height: ${menuViewHeight}px;`}>
+      <section class={`menu-page`} class:hide={!expanded} style={`min-width: ${menuViewWidth}px; min-height: ${menuViewHeight}px;`}>
         <header class={`menu-header sticky top-0`}>
           <h1 class={`font-bold`}>Approval</h1>
         </header>
-        {#each { length: 10 } as _, i}
-          <p class={`p-4`}>{i} Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsam officia magnam quia et eius, laudantium maxime alias eveniet facilis. Totam cupiditate iste quo itaque ea nulla vero repellat aspernatur dignissimos?</p>
-        {/each}
+        <div class="overflow-x-auto">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>
+                  <label>
+                    <input type="checkbox" class="checkbox" />
+                  </label>
+                </th>
+                <th>Name</th>
+                <th>Submission date</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {#each forReview as r}
+                <tr>
+                  <th>
+                    <label>
+                      <input type="checkbox" class="checkbox" />
+                    </label>
+                  </th>
+                  <td>
+                    <div class="flex items-center gap-3">
+                      <div class="avatar">
+                        <div class="mask mask-squircle h-12 w-12">
+                          <img src={r.imageUrl} alt={r.name} />
+                        </div>
+                      </div>
+                      <div>
+                        <div class="text-sm opacity-50">{r.id}</div>
+                        <div class="font-bold">{r.name}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>{r.submissionDate}</td>
+                  <th>
+                    <button class="btn btn-ghost btn-xs">Review</button>
+                  </th>
+                </tr>
+              {/each}
+            </tbody>
+            <tfoot>
+              <tr>
+                <th></th>
+                <th>Name</th>
+                <th>Submission date</th>
+                <th></th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
       </section>
-      <section class={`menu-page`} style={`min-width: ${menuViewWidth}px; min-height: ${menuViewHeight}px;`}>
+      <section class={`menu-page`} class:hide={!expanded} style={`min-width: ${menuViewWidth}px; min-height: ${menuViewHeight}px;`}>
         <header class={`menu-header sticky top-0`}>
           <h1 class={`font-bold`}>Fraud alert</h1>
         </header>
-        {#each { length: 10 } as _, i}
-          <p class={`p-4`}>{i} Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsam officia magnam quia et eius, laudantium maxime alias eveniet facilis. Totam cupiditate iste quo itaque ea nulla vero repellat aspernatur dignissimos?</p>
-        {/each}
+        <div class="overflow-x-auto">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>
+                  <label>
+                    <input type="checkbox" class="checkbox" />
+                  </label>
+                </th>
+                <th>Name</th>
+                <th>Location</th>
+                <th>Date</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {#each fraudAlert as f}
+                <tr>
+                  <th>
+                    <label>
+                      <input type="checkbox" class="checkbox" />
+                    </label>
+                  </th>
+                  <td>
+                    <div class="flex items-center gap-3">
+                      <div class="avatar">
+                        <div class="mask mask-squircle h-12 w-12">
+                          <img src={f.imageUrl} alt={f.driver} />
+                        </div>
+                      </div>
+                      <div>
+                        <div class="text-sm opacity-50">{f.id}</div>
+                        <div class="font-bold">{f.driver}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>{f.location}</td>
+                  <td>{f.date}</td>
+                  <th>
+                    <button class="btn btn-ghost btn-xs">Whitelist</button>
+                  </th>
+                </tr>
+              {/each}
+            </tbody>
+            <tfoot>
+              <tr>
+                <th></th>
+                <th>Name</th>
+                <th>Location</th>
+                <th>Date</th>
+                <th></th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
       </section>
     </div>
   </div>
